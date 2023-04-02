@@ -5,7 +5,13 @@ public class DsClient {
     Socket s;
     DataOutputStream outStream;
     BufferedReader inputStream;
+
     String lastMessage = "foo";
+
+    String maxType = new String();
+    int noOfServers = 0;
+    String maxRecord = "";
+    String[] maxRecordArray = {"0","0","0","0","0","0","0","0","0","0"};
     // Constructor
 
     public DsClient(String address, int port) throws Exception {
@@ -31,20 +37,31 @@ public class DsClient {
         recieveMessage(); //recieve OK
 
         boolean firstLoop = true;
-
-        while(lastMessage.equals("NONE") == false) {
+        int currentServerID = 0;
+        while(lastMessage.contains("NONE") == false) {
             sendMessage("REDY"); //send REDY
             String currentMessage = recieveMessage(); //recieve a message
+            String[] currentMessageArray = currentMessage.split(" ");
 
             if(firstLoop) { //Identify the largest server type; you may do this only once
                 getLargest();
                 if(currentMessage.contains("JOBN")) { //if the message recieved at step 10 is of type JOBN
-                    sendMessage("SCHD"); //not complete
+                    System.out.println(currentMessage);
+                    sendMessage("SCHD " + currentMessageArray[2] + " " + maxType + " " + currentServerID); //not complete
                     firstLoop = false;
+                    currentServerID++;
+                    if(currentServerID >= noOfServers) {
+                        currentServerID = 0;
+                    }
                 }
             } else {
                 if(currentMessage.contains("JOBN")) { //if the message recieved at step 10 is of type JOBN
-                    sendMessage("SCHD"); //not complete
+                    System.out.println(currentMessage);
+                    sendMessage("SCHD " + currentMessageArray[2] + " " + maxType + " " + currentServerID); //not complete
+                    currentServerID++;
+                    if(currentServerID >= noOfServers) {
+                        currentServerID = 0;
+                    }
                 }
             }
 
@@ -62,10 +79,6 @@ public class DsClient {
         int recSize = Integer.parseInt(dataArray[1]);
         sendMessage("OK"); //send OK
 
-        String maxType = new String();
-        int noOfServers = 0;
-        String maxRecord = "";
-        String[] maxRecordArray = {"0","0","0","0","0","0","0","0","0","0"};
         for(int i = 0;i<nRecs;i++) {
             String currentRecord = recieveMessage(); //recieve each record
             String[] currentRecordArray = currentRecord.split(" ");
@@ -76,7 +89,7 @@ public class DsClient {
             if((Integer.parseInt(currentRecordArray[4])>Integer.parseInt(maxRecordArray[4]))||(i==0)) { //keep track of largest server type
                 maxRecord = currentRecord;
                 maxRecordArray = currentRecordArray;
-                maxType = maxRecordArray[2];
+                maxType = maxRecordArray[0];
                 noOfServers = 1;
             } else {
                 noOfServers++; //and the number of servers of that type
