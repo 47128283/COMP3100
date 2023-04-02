@@ -5,12 +5,7 @@ public class DsClient {
     Socket s;
     DataOutputStream outStream;
     BufferedReader inputStream;
-    String[] firstMax = new String[10];
-    String[] currentServer = new String[0];
-    int groupCount = 1;
-    String groupType = "";
-    String temp = new String();
-
+    String lastMessage = "foo";
     // Constructor
 
     public DsClient(String address, int port) throws Exception {
@@ -30,93 +25,73 @@ public class DsClient {
     }
 
     public void byClient() throws Exception {
-        sendMessage("HELO");
-        System.out.println(this.inputStream.readLine()); //recieve ok
-        String username = System.getProperty("user.name");
-        sendMessage("AUTH " + username);
-        System.out.println(this.inputStream.readLine()); //recieve ok
-        String lastMessage = "";
-        String currentMessage = lastMessage;
-        boolean isFirstLoop = true;
-        int s = 0;
-        while (lastMessage.equals("NONE") == false) {
-            sendMessage("REDY");
-            currentMessage = this.inputStream.readLine(); //recieve message
-            System.out.println(currentMessage);
-            if(currentMessage.equals("NONE")) break;
-            String[] currentJob = currentMessage.split(" "); //split the message
-            //System.out.print("Server says: ");
-            for(int i = 0;i<currentJob.length;i++) {
-                //System.out.print(currentJob[i] + " ");
-            }
-            //System.out.println("");
+        sendMessage("HELO"); //send HELO
+        recieveMessage(); //recieve OK
+        sendMessage("AUTH" + System.getProperty("user.name")); //send AUTH along with the user
+        recieveMessage(); //recieve OK
 
-            if(isFirstLoop) {
-                findLargest();
-                isFirstLoop = false;
-            }
-            sendMessage("OK");
-            if(currentJob[0].equals("JOBN")) {
-                //System.out.print("schd reached\n");
-                sendMessage("SCHD " + currentJob[2] + " " + groupType + " " + s);
-                System.out.println(this.inputStream.readLine()); //recieve ok
-                s++;
-                if(s>groupCount) {
-                    s = 0;
+        boolean firstLoop = true;
+
+        while(lastMessage.equals("NONE") == false) {
+            sendMessage("REDY"); //send REDY
+            String currentMessage = recieveMessage(); //recieve a message
+
+            if(firstLoop) { //Identify the largest server type; you may do this only once
+                getLargest();
+                if(currentMessage.contains("JOBN")) { //if the message recieved at step 10 is of type JOBN
+                    sendMessage("SCHD"); //not complete
+                    firstLoop = false;
+                }
+            } else {
+                if(currentMessage.contains("JOBN")) { //if the message recieved at step 10 is of type JOBN
+                    sendMessage("SCHD"); //not complete
                 }
             }
+
             lastMessage = currentMessage;
         }
-
         sendMessage("QUIT");
+        recieveMessage();
     }
 
-    public void findLargest() throws Exception{
-        sendMessage("GETS All");
-        
-        temp = this.inputStream.readLine();
-        String[] dataReadOut = temp.split(" ");
-        for (int i = 0; i < dataReadOut.length; i++) {
-            //System.out.print(dataReadOut[i] + " ");
-        }
-        System.out.print("\n");
-        sendMessage("OK");
+    public void getLargest() throws Exception {
+        sendMessage("GETS All"); //send GETS All
+        String dataString = recieveMessage(); // recieve DATA
+        String[] dataArray = dataString.split(" ");
+        int nRecs = Integer.parseInt(dataArray[1]);
+        int recSize = Integer.parseInt(dataArray[1]);
+        sendMessage("OK"); //send OK
 
-        temp = this.inputStream.readLine();
-        firstMax = temp.split(" ");
-        
-        for (int i = 0; i < firstMax.length; i++) {
-            //System.out.println(firstMax[i] + " ");
-        }
-        System.out.print("yeet\n");
-        for (int i = 1; i < Integer.parseInt(dataReadOut[1]) - 1; i++) {
-            temp = this.inputStream.readLine();
-            String[] current = temp.split(" ");
-            for (int j = 0; j < current.length; j++) {
-                //System.out.print(current[j] + " ");
-            }
-            
-            System.out.print("\n");
-            if (Integer.parseInt(current[4]) > Integer.parseInt(firstMax[4])) {
-                firstMax = current;
-                groupCount = 1;
-                groupType = current[0];
+        String maxType = new String();
+        int noOfServers = 0;
+        String maxRecord = "";
+        String[] maxRecordArray = {"0","0","0","0","0","0","0","0","0","0"};
+        for(int i = 0;i<nRecs;i++) {
+            String currentRecord = recieveMessage(); //recieve each record
+            String[] currentRecordArray = currentRecord.split(" ");
+            //for(int j = 0;j<currentRecordArray.length;j++) {
+            //    System.out.print(currentRecordArray[j] + " ");
+            //}
+            System.out.println("");
+            if((Integer.parseInt(currentRecordArray[4])>Integer.parseInt(maxRecordArray[4]))||(i==0)) { //keep track of largest server type
+                maxRecord = currentRecord;
+                maxRecordArray = currentRecordArray;
+                maxType = maxRecordArray[2];
+                noOfServers = 1;
             } else {
-                groupCount++;
+                noOfServers++; //and the number of servers of that type
             }
         }
-        currentServer = firstMax;
-        System.out.print("First Biggest ");
-        for (int i = 0; i < firstMax.length; i++) {
-            System.out.print(firstMax[i] + " ");
-        }
-        System.out.print("\n");
-        System.out.println(groupCount);
-        System.out.println(groupType);
-        
+        System.out.println("max " + maxRecord);
+        sendMessage("OK"); //send OK
+        recieveMessage(); //recieve .
     }
+
 
     public void sendMessage(String message) throws Exception {
         this.outStream.write((message + "\n").getBytes("UTF-8"));
+    }
+    public String recieveMessage() throws Exception {
+        return this.inputStream.readLine();
     }
 }

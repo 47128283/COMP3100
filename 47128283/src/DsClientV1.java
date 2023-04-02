@@ -1,7 +1,7 @@
 import java.net.*;
 import java.io.*;
 
-public class DsClient {
+public class DsClientV1 {
     Socket s;
     DataOutputStream outStream;
     BufferedReader inputStream;
@@ -13,7 +13,7 @@ public class DsClient {
 
     // Constructor
 
-    public DsClient(String address, int port) throws Exception {
+    public DsClientV1(String address, int port) throws Exception {
         s = new Socket(address, port);
         outStream = new DataOutputStream(s.getOutputStream());
         inputStream = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -21,7 +21,7 @@ public class DsClient {
     }
 
     public static void main(String[] args) throws Exception {
-        DsClient c = new DsClient("127.0.0.1", 50000);
+        DsClientV1 c = new DsClientV1("127.0.0.1", 50000);
         c.byClient();
 
         c.s.close();
