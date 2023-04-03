@@ -41,23 +41,16 @@ public class DsClient {
         while(lastMessage.contains("NONE") == false) {
             sendMessage("REDY"); //send REDY
             String currentMessage = recieveMessage(); //recieve a message
+            if(currentMessage.contains("NONE")) break;
             String[] currentMessageArray = currentMessage.split(" ");
 
             if(firstLoop) { //Identify the largest server type; you may do this only once
                 getLargest();
-                if(currentMessage.contains("JOBN")) { //if the message recieved at step 10 is of type JOBN
-                    System.out.println(currentMessage);
-                    sendMessage("SCHD " + currentMessageArray[2] + " " + maxType + " " + currentServerID); //not complete
-                    firstLoop = false;
-                    currentServerID++;
-                    if(currentServerID >= noOfServers) {
-                        currentServerID = 0;
-                    }
-                }
+                firstLoop = false;
             } else {
                 if(currentMessage.contains("JOBN")) { //if the message recieved at step 10 is of type JOBN
                     System.out.println(currentMessage);
-                    sendMessage("SCHD " + currentMessageArray[2] + " " + maxType + " " + currentServerID); //not complete
+                    sendMessage("SCHD " + currentMessageArray[2]+ " " + maxType + " " + currentServerID); //not complete
                     currentServerID++;
                     if(currentServerID >= noOfServers) {
                         currentServerID = 0;
