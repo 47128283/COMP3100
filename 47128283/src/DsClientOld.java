@@ -1,7 +1,7 @@
 import java.net.*;
 import java.io.*;
 
-public class DsClient {
+public class DsClientOld {
     Socket s;
     DataOutputStream outStream;
     BufferedReader inputStream;
@@ -14,7 +14,7 @@ public class DsClient {
     String[] maxRecordArray = {"0","0","0","0","0","0","0","0","0","0"};
     // Constructor
 
-    public DsClient(String address, int port) throws Exception {
+    public DsClientOld(String address, int port) throws Exception {
         s = new Socket(address, port);
         outStream = new DataOutputStream(s.getOutputStream());
         inputStream = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -22,7 +22,7 @@ public class DsClient {
     }
 
     public static void main(String[] args) throws Exception {
-        DsClient c = new DsClient("127.0.0.1", 50000);
+        DsClientOld c = new DsClientOld("127.0.0.1", 50000);
         c.byClient();
 
         c.s.close();
@@ -33,7 +33,7 @@ public class DsClient {
     public void byClient() throws Exception {
         sendMessage("HELO"); //send HELO
         recieveMessage(); //recieve OK
-        sendMessage("AUTH " + System.getProperty("user.name")); //send AUTH along with the user
+        sendMessage("AUTH" + System.getProperty("user.name")); //send AUTH along with the user
         recieveMessage(); //recieve OK
 
         boolean firstLoop = true;
@@ -43,7 +43,7 @@ public class DsClient {
             String currentMessage = recieveMessage(); //recieve a message
             if(currentMessage.contains("NONE")) break;
             if(currentMessage.contains("JCPL")) {
-                //System.out.println("JCPL " + currentMessage);
+                System.out.println("JCPL " + currentMessage);
                 continue;
             }
             String[] currentMessageArray = currentMessage.split(" ");
@@ -52,7 +52,7 @@ public class DsClient {
                 firstLoop = false;
             } 
             if(currentMessage.contains("JOBN")) { //if the message recieved at step 10 is of type JOBN
-                //System.out.println(currentMessage);
+                System.out.println(currentMessage);
                 sendMessage("SCHD " + currentMessageArray[2]+ " " + maxType + " " + currentServerID%noOfServers); //not complete
                 recieveMessage();
                 currentServerID++;
@@ -70,7 +70,7 @@ public class DsClient {
         String dataString = recieveMessage(); // recieve DATA
         String[] dataArray = dataString.split(" ");
         int nRecs = Integer.parseInt(dataArray[1]);
-        //int recSize = Integer.parseInt(dataArray[1]);
+        int recSize = Integer.parseInt(dataArray[1]);
         sendMessage("OK"); //send OK
 
         for(int i = 0;i<nRecs;i++) {
@@ -89,7 +89,7 @@ public class DsClient {
                 noOfServers++; //and the number of servers of that type
             }
         }
-        //System.out.println("max " + maxRecord);
+        System.out.println("max " + maxRecord);
         sendMessage("OK"); //send OK
         recieveMessage(); //recieve .
     }
