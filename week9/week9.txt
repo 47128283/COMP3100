@@ -1,0 +1,31 @@
+Task 1: Identify pros and cons of each of three baseline algorithms.
+Task 2: Run simulations with each of them using ds-config01–wk9.xml
+	Task 2.1: Run them in the normal mode
+	Task 2.2: Run them in the interactive mode (using “-i” with ds-server)
+
+BASELINE ALGORITHIMS WITHOUT GLOBAL QUEUE
+First-Fit
+Pros
+Simple algorithim to implement
+relatively fast
+
+Cons
+Can be wasteful as it only checks IF it is capable, not close the requirements are.
+
+Best-Fit
+Pros
+Better than FF
+Finds the best server to host the job
+Cons
+Slightly slower than FF.
+
+Worst-Fit
+Pros
+Gives the job the best chance to be run
+
+Cons
+extremely wasteful in both time and space.
+
+DIFFERENCES WITH AND WITHOUT QUEUE
+Queues allow jobs to be scheduled while a job is running which mitigates slack time in between two jobs. This does place an emphasis on spacial requirements since if the algoritihm constantly over allocates, it can create large queue times, especially for more intensive jobs thta require those larger servers.
+
